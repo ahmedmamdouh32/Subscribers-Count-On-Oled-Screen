@@ -7,6 +7,20 @@
 
 Adafruit_SSD1306 display = Adafruit_SSD1306(128, 64, &Wire);
 
+const unsigned char epd_bitmap_eye[] PROGMEM = {
+  0x00, 0x1f, 0xf8, 0x00, 0x00, 0xff, 0xff, 0x00, 0x07, 0xf0, 0x0f, 0xe0, 0x0f, 0xe0, 0x07, 0xf0,
+  0x1f, 0xc0, 0x03, 0xf8, 0x3f, 0xc3, 0xc3, 0xfc, 0x7f, 0x87, 0xe1, 0xfe, 0xff, 0x87, 0xe1, 0xff,
+  0xff, 0x87, 0xe1, 0xff, 0x7f, 0x87, 0xe1, 0xfe, 0x3f, 0xc3, 0xc3, 0xfc, 0x1f, 0xc0, 0x03, 0xf8,
+  0x0f, 0xe0, 0x07, 0xf0, 0x07, 0xf0, 0x0f, 0xe0, 0x00, 0xff, 0xff, 0x00, 0x00, 0x1f, 0xf8, 0x00
+};
+
+const unsigned char epd_bitmap_user [] PROGMEM = {
+  0x07, 0xe0, 0x0f, 0xf0, 0x0c, 0x30, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x0e, 0x70,
+  0x07, 0xe0, 0x1f, 0xf8, 0x38, 0x1c, 0x60, 0x06, 0x60, 0x06, 0xc0, 0x03, 0xc0, 0x03, 0xc0, 0x03
+};
+
+
+
 long PreviousSubscribersCount = 0;
 long CurrentSubscribersCount = 0;
 
@@ -36,29 +50,34 @@ void setup() {
   }
   Serial.println("Connected!");
   oled_print("Connected!");
+  display.clearDisplay();
 
- 
+
 }
 
 
 void loop() {
   makeGetRequest();
 
-//  if (PreviousViewsCount != CurrentViewsCount) {
-//    PreviousViewsCount = CurrentViewsCount;
-//    display_5_digits_centered(CurrentViewsCount);
-//  }
+  //  if (PreviousViewsCount != CurrentViewsCount) {
+  //    PreviousViewsCount = CurrentViewsCount;
+  //    display_5_digits_centered(CurrentViewsCount);
+  //  }
+  printEye();
   display_5_digits_centered(CurrentViewsCount);
   delay(5000);
+  display.clearDisplay();
+  printUser();
   display_5_digits_centered(CurrentSubscribersCount);
   delay(5000);
+  display.clearDisplay();
 
-  
-//  if (PreviousSubscribersCount != CurrentSubscribersCount) {
-//    PreviousSubscribersCount = CurrentSubscribersCount;
-//    display_5_digits_centered(CurrentSubscribersCount);
-//  }
-  
+
+  //  if (PreviousSubscribersCount != CurrentSubscribersCount) {
+  //    PreviousSubscribersCount = CurrentSubscribersCount;
+  //    display_5_digits_centered(CurrentSubscribersCount);
+  //  }
+
 }
 
 
@@ -104,14 +123,14 @@ void makeGetRequest() {
     }
     else {
       Serial.println("WiFi Disconnected");
-//      WiFi.begin(ssid, password);
-//      Serial.print("Connecting to WiFi..");
-//      oled_print("Connecting to WiFi..");
-//      while (WiFi.status() != WL_CONNECTED) {
-//        delay(500);
-//        Serial.print(".");
-//        oled_print(".");
-//      }
+      //      WiFi.begin(ssid, password);
+      //      Serial.print("Connecting to WiFi..");
+      //      oled_print("Connecting to WiFi..");
+      //      while (WiFi.status() != WL_CONNECTED) {
+      //        delay(500);
+      //        Serial.print(".");
+      //        oled_print(".");
+      //      }
     }
   }
 
@@ -144,8 +163,9 @@ void oled_print(String Data) {
   display.display();
 }
 
+
 void display_5_digits_centered(int number) {
-  display.clearDisplay();
+  //display.clearDisplay();
 
   // Step 1: Format the number with comma
   String formatted;
@@ -173,8 +193,8 @@ void display_5_digits_centered(int number) {
   }
 
   int startX = (128 - totalWidth) / 2;
-  int y = (64 - 8 * 4) / 2; // vertically center size-4 text
-
+  //  int y = (64 - 8 * 4) / 2; // vertically center size-4 text
+  int y = 26 ;
   // Step 3: Draw character by character
   int x = startX;
   for (int i = 0; i < formatted.length(); i++) {
@@ -192,4 +212,21 @@ void display_5_digits_centered(int number) {
     }
   }
   display.display();
+}
+
+
+
+void writeEye(unsigned char x, unsigned char y) {
+  display.drawBitmap(x, y, epd_bitmap_eye, 32, 16, WHITE);
+}
+void writeUser(unsigned char x, unsigned char y) {
+  display.drawBitmap(x, y, epd_bitmap_user, 16, 16, WHITE);
+//  display.drawLine(x, y + 14, x + 15, y + 14, WHITE);
+  display.drawLine(x, y + 15, x + 15, y + 15, WHITE);
+}
+void printEye(){
+  writeEye(48,0);
+}
+void printUser(){
+  writeUser(56,0);
 }
